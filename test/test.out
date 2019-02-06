@@ -1,0 +1,12 @@
+{
+  "params": {
+    "title": "Title",
+    "text": "Content of file: $TEXT_FILE_CONTENT",
+    "tailLines": "10",
+    "textFile": "sample.txt",
+    "actionTarget": "$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME"
+  },
+  "source": {
+    "url": "https://some.url"
+  }
+}

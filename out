@@ -1,21 +1,11 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 CURL_OPTION="-v"
 
 set -e
-exec 3>&1
-exec 1>&2
+exec 3>&1 # make stdout available as fd 3 for the result
+exec 1>&2 # redirect all output to stderr for logging
 #set -x
-
-function evaluate {
-  __var=$1
-  # escape ( and ) from markdown
-  __var="${__var//\(/\\(}"
-  __var="${__var//\)/\\)}"
-  __var="${__var//\:/\\:}"
-  __var=`eval echo $__var`
-  echo $__var
-}
 
 payload=$(mktemp /tmp/resource-in.XXXXXX)
 cat > "${payload}" <&0
@@ -23,13 +13,24 @@ cat > "${payload}" <&0
 format="markdown"
 color="$(jq -r '.params.color // "00EA43"' < "${payload}")"
 
-actionName=$(evaluate "$(jq -r '.params.actionName // "Open Concourse"' < "${payload}")")
+tailLines="$(jq -r '.params.tailLines // ""' < "${payload}")"
+[[ -z "${tailLines}" ]] && tailLines=10
 
-actionTarget=$(evaluate "$(jq -r '.params.actionTarget // "https://concourse.ci"' < "${payload}")")
+textFile="$(jq -r '.params.textFile // ""' < "${payload}")"
+export TEXT_FILE_CONTENT=""
+[[ -n "${textFile}" && -f "${textFile}" ]] && TEXT_FILE_CONTENT="$(tail -n $tailLines "${textFile}")"
 
-title=$(evaluate "$(jq -r '.params.title // "Concourse CI"' < "${payload}")")
+actionName="$(jq -r '.params.actionName // "Open Concourse"' < "${payload}")"
 
-text=$(evaluate "$(jq -r '.params.text // "NO MSG"' < "${payload}")")
+actionTarget="$(jq -r '.params.actionTarget // "https://concourse.ci"' < "${payload}")"
+
+title="$(jq -r '.params.title // "Concourse CI"' < "${payload}")"
+
+text="$(jq -r '.params.text // "NO MSG"' < "${payload}")"
+
+text=$(echo -n "$text" | envsubst)
+actionName=$(echo -n "$actionName" | envsubst)
+actionTarget=$(echo -n "$actionTarget" | envsubst)
 
 body="{\"TextFormat\": \"${format}\", \"text\": \"${text}\", \"title\": \"${title}\", \"potentialAction\": [{\"@context\": \"https://schema.org\", \"@type\": \"ViewAction\", \"name\": \"${actionName}\", \"target\": [\"${actionTarget}\"]}]}"
 
@@ -45,6 +46,9 @@ metadata="$(cat <<EOF
   "version": {"timestamp": "${timestamp}"},
   "metadata": [
     {"name": "url", "value": ${redacted_webhook_url}},
+    {"name": "actionName", "value": "${actionName}"},
+    {"name": "actionTarget", "value": "${actionTarget}"},
+    {"name": "text", "value": "${text}"},
     {"name": "BUILD_PIPELINE_NAME", "value": "${BUILD_PIPELINE_NAME}"}
   ]
 }
