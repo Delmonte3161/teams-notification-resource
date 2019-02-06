@@ -3,6 +3,9 @@
 CURL_OPTION="-v"
 
 set -e
+
+cd "${1}"
+
 exec 3>&1 # make stdout available as fd 3 for the result
 exec 1>&2 # redirect all output to stderr for logging
 #set -x
@@ -32,6 +35,8 @@ text=$(echo -n "$text" | envsubst)
 actionName=$(echo -n "$actionName" | envsubst)
 actionTarget=$(echo -n "$actionTarget" | envsubst)
 
+#echo "$text"
+
 body="{\"TextFormat\": \"${format}\", \"text\": \"${text}\", \"title\": \"${title}\", \"potentialAction\": [{\"@context\": \"https://schema.org\", \"@type\": \"ViewAction\", \"name\": \"${actionName}\", \"target\": [\"${actionTarget}\"]}]}"
 
 webhook_url="$(jq -r '.source.url' < "${payload}")"
@@ -48,7 +53,6 @@ metadata="$(cat <<EOF
     {"name": "url", "value": ${redacted_webhook_url}},
     {"name": "actionName", "value": "${actionName}"},
     {"name": "actionTarget", "value": "${actionTarget}"},
-    {"name": "text", "value": "${text}"},
     {"name": "BUILD_PIPELINE_NAME", "value": "${BUILD_PIPELINE_NAME}"}
   ]
 }
