@@ -13,7 +13,6 @@ exec 1>&2 # redirect all output to stderr for logging
 payload=$(mktemp /tmp/resource-in.XXXXXX)
 cat > "${payload}" <&0
 
-format="markdown"
 color="$(jq -r '.params.color // "00EA43"' < "${payload}")"
 
 tailLines="$(jq -r '.params.tailLines // ""' < "${payload}")"
@@ -28,16 +27,20 @@ actionName="$(jq -r '.params.actionName // "Open Concourse"' < "${payload}")"
 actionTarget="$(jq -r '.params.actionTarget // "https://concourse.ci"' < "${payload}")"
 
 title="$(jq -r '.params.title // "Concourse CI"' < "${payload}")"
+activitySubtitle="$(jq -r '.params.activitySubtitle // ""' < "${payload}")"
 
 text="$(jq -r '.params.text // "NO MSG"' < "${payload}")"
 
 text=$(echo -n "$text" | envsubst)
 actionName=$(echo -n "$actionName" | envsubst)
 actionTarget=$(echo -n "$actionTarget" | envsubst)
+title=$(echo -n "$title" | envsubst)
+activitySubtitle=$(echo -n "$activitySubtitle" | envsubst)
 
 #echo "$text"
 
-body="{\"TextFormat\": \"${format}\", \"text\": \"${text}\", \"title\": \"${title}\", \"potentialAction\": [{\"@context\": \"https://schema.org\", \"@type\": \"ViewAction\", \"name\": \"${actionName}\", \"target\": [\"${actionTarget}\"]}]}"
+body="{\"@type\": \"MessageCard\", \"@context\": \"http://schema.org/extensions\", \"summary\": \"summary\", \"title\": \"${title}\", \"themeColor\": \"${color}\", \"sections\": [{\"text\": \"${text}\"},{\"activitySubtitle\": \"${activitySubtitle}\"}], \"potentialAction\": [{\"@context\": \"https://schema.org\", \"@type\": \"ViewAction\", \"name\": \"${actionName}\", \"target\": [\"${actionTarget}\"]}]}"
+#echo "$body"
 
 webhook_url="$(jq -r '.source.url' < "${payload}")"
 redacted_webhook_url=$(echo "${webhook_url}" | sed -e 's#/\([^/\.]\{2\}\)[^/.]\{5,\}\([^/.]\{2\}\)#/\1…\2#g' | jq -R .)
