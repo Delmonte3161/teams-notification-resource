@@ -4,6 +4,7 @@
     "text": "Content of file:\n$TEXT_FILE_CONTENT",
     "tailLines": "10",
     "textFile": "sample.txt",
+    "debug": "true",
     "actionTarget": "https://$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME"
   },
   "source": {
