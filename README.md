@@ -75,7 +75,7 @@ resource_types:
 - name: teams-notification
   type: docker-image
   source:
-    repository: bmsoft/teams-notification-resource
+    repository: delmonte3161/teams-notification-resource
     tag: latest
 ```
 
