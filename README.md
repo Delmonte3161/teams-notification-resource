@@ -65,6 +65,8 @@ resources:
 connection for "Incomming Webhook". Usually in the
 form: `https://outlook.office365.com/webhook/XXX`
 
+* `disable`: *Optional.* Set to `true` to skip all messaging. Convenient for temporarily disabling notifications without editing your pipelines.
+
 don't forget to define the non-built-in type:
 
 ```
