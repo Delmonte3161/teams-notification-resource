@@ -17,7 +17,7 @@ disable="$(jq -r '.source.disable // "false"' < "${payload}")"
 if [[ "$disable" == "true" ]]
 then
   echo "Notifications disabled"
-  exit 0
+  exit
 fi
 
 debug="$(jq -r '.params.debug // "false"' < "${payload}")"
