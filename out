@@ -13,11 +13,11 @@ exec 1>&2 # redirect all output to stderr for logging
 payload=$(mktemp /tmp/resource-in.XXXXXX)
 cat > "${payload}" <&0
 
-disable="$(jq -r '.source.disable' < "${payload}")"
+disable="$(jq -r '.source.disable // "false"' < "${payload}")"
 if [[ "$disable" == "true" ]]
 then
-    echo "$timestamp" >&3
-    exit 0
+  echo "Notifications disabled"
+  exit 0
 fi
 
 debug="$(jq -r '.params.debug // "false"' < "${payload}")"
